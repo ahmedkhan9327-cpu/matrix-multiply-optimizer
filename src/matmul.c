@@ -11,7 +11,7 @@ int Bt[N][N];
 
 struct timespec start, end;
 
-// Matrix-multiplier naive implementation
+// Matrix-multiplier naive
 void matmul_naive(void) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
@@ -22,7 +22,7 @@ void matmul_naive(void) {
     }
 }
 
-// Matrix-multiplier loop reorder i-k-j
+// Matrix-multiplier loop reorder
 void matmul_naive_reorder(void) {
     for (int i = 0; i < N; i++) {
         for (int k = 0; k < N; k++) {
@@ -33,7 +33,7 @@ void matmul_naive_reorder(void) {
     }
 }
 
-// Matrix-multiplier blocking implementation
+// Matrix-multiplier blocking
 void matmul_block(void) {
     for (int i0 = 0; i0 < N; i0 += BLOCK_SIZE) {
         for (int j0 = 0; j0 < N; j0 += BLOCK_SIZE) {
@@ -50,6 +50,7 @@ void matmul_block(void) {
     }
 }
 
+// Matrix-multiplier transpose
 void matmul_transpose(void) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
@@ -60,7 +61,7 @@ void matmul_transpose(void) {
     }
 }
 
-// Resets all values of matrix C
+// Resets values of matrix C
 void reset_C(void) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
