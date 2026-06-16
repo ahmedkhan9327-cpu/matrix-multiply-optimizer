@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <time.h>
 
-#define N 512
+#define N 1024
+#define BLOCK_SIZE 128
 
-float A[N][N];
-float B[N][N];
-float C[N][N];
+int A[N][N];
+int B[N][N];
+int C[N][N];
+int Bt[N][N];
 
 struct timespec start, end;
 
@@ -33,7 +35,29 @@ void matmul_naive_reorder(void) {
 
 // Matrix-multiplier blocking implementation
 void matmul_block(void) {
+    for (int i0 = 0; i0 < N; i0 += BLOCK_SIZE) {
+        for (int j0 = 0; j0 < N; j0 += BLOCK_SIZE) {
+            for (int k0 = 0; k0 < N; k0 += BLOCK_SIZE) {
+                for (int i = i0; i < i0 + BLOCK_SIZE; i++) {
+                    for (int k = k0; k < k0 + BLOCK_SIZE; k++) {
+                        for (int j = j0; j < j0 + BLOCK_SIZE; j++) {
+                            C[i][j] += A[i][k] * B[k][j];
+                         }
+                    }
+                }
+            }
+        }
+    }
+}
 
+void matmul_transpose(void) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+                C[i][j] += A[i][k] * Bt[j][k];
+            }
+        }
+    }
 }
 
 // Resets all values of matrix C
@@ -41,6 +65,15 @@ void reset_C(void) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             C[i][j] = 0;
+        }
+    }
+}
+
+// Tranposes matrix B
+void transpose_B(void) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            Bt[j][i] = B[i][j];
         }
     }
 }
@@ -60,9 +93,9 @@ int main(void) {
     clock_gettime(CLOCK_MONOTONIC, &end);
 
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
-    
+
     printf("Naive implementation:\n");
-    printf("C[0][0] = %f\n", C[0][0]);
+    printf("C[0][0] = %d\n", C[0][0]);
     printf("Time: %f seconds\n", elapsed);
 
     reset_C();
@@ -74,10 +107,34 @@ int main(void) {
     elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
 
     printf("Naive implementation reorder:\n");
-    printf("C[0][0] = %f\n", C[0][0]);
+    printf("C[0][0] = %d\n", C[0][0]);
     printf("Time: %f seconds\n", elapsed);
 
     reset_C();
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    matmul_block();
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    
+    elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+
+    printf("Block implementation:\n");
+    printf("C[0][0] = %d\n", C[0][0]);
+    printf("Time: %f seconds\n", elapsed);
+
+    reset_C();
+
+    transpose_B();
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    matmul_transpose();
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    
+    elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+
+    printf("Transpose implementation:\n");
+    printf("C[0][0] = %d\n", C[0][0]);
+    printf("Time: %f seconds\n", elapsed);
 
     return 0;
 }
